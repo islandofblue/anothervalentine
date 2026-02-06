@@ -290,23 +290,32 @@ document.addEventListener('mouseup', e=>{
 });
 
 // Touch events
-wordSearchDiv.addEventListener('touchstart', e=>{
-  const cell = getCellFromEvent(e.target);
-  if(cell){
+wordSearchDiv.addEventListener('touchstart', e => {
+  e.preventDefault(); // prevent page scroll
+  const touch = e.touches[0];
+  const cell = document.elementFromPoint(touch.clientX, touch.clientY);
+  if(cell && cell.classList.contains('cell')){
     selecting = true;
+    startCell = cell;
     selectCells(cell);
   }
 });
-wordSearchDiv.addEventListener('touchmove', e=>{
+
+wordSearchDiv.addEventListener('touchmove', e => {
+  e.preventDefault(); // prevent page scroll
+  if(!selecting) return;
   const touch = e.touches[0];
-  const elem = document.elementFromPoint(touch.clientX,touch.clientY);
-  const cell = getCellFromEvent(elem);
-  if(selecting && cell) selectCells(cell);
+  const elem = document.elementFromPoint(touch.clientX, touch.clientY);
+  if(elem && elem.classList.contains('cell')){
+    selectCells(elem);
+  }
 });
-document.addEventListener('touchend', e=>{
+
+document.addEventListener('touchend', e => {
   selecting = false;
   startCell = null;
 });
+
 </script>
 
 </body>
