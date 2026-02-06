@@ -14,28 +14,34 @@
     background: #ffe6f0;
     color: #d6336c;
     text-align: center;
-    padding: 20px;
+    padding: 15px;
     overflow-x: hidden;
   }
+
   h1 {
     color: #ff66aa;
+    font-size: 2em;
   }
+
   #instructions {
-    font-size: 1.2em;
-    margin-bottom: 20px;
-    line-height: 1.5;
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    line-height: 1.4;
   }
+
   #word-search {
     display: grid;
-    grid-template-columns: repeat(12, 40px);
-    grid-template-rows: repeat(12, 40px);
+    grid-template-columns: repeat(12, 1fr);
     gap: 2px;
     justify-content: center;
     user-select: none;
+    max-width: 480px; /* Desktop-friendly grid width */
+    margin: 0 auto;
   }
+
   .cell {
-    width: 40px;
-    height: 40px;
+    aspect-ratio: 1 / 1; /* square cells */
+    width: 100%;
     background: #ffe6f0;
     border: 1px solid #ff99cc;
     display: flex;
@@ -45,20 +51,24 @@
     cursor: pointer;
     transition: background 0.2s, color 0.2s;
     border-radius: 8px;
-    font-size: 18px;
+    font-size: 1.2em;
   }
+
   .cell.selected {
     background: #ff99cc;
     color: white;
   }
+
   .cell.found {
     background: #ff66aa;
     color: white;
   }
+
   #found-words {
-    margin-top: 20px;
-    font-size: 1.1em;
+    margin-top: 15px;
+    font-size: 1em;
   }
+
   #celebration {
     display: none;
     position: fixed;
@@ -69,27 +79,41 @@
     text-align: center;
     background: #ffe6f0;
     border: 2px solid #ff66aa;
-    padding: 20px;
+    padding: 15px;
     border-radius: 20px;
     box-shadow: 0 0 20px rgba(255,102,170,0.5);
+    max-width: 90%;
   }
+
   .gif-wrapper {
-    max-width: 300px;
+    max-width: 250px;
     margin: 0 auto;
   }
+
   .gif-wrapper iframe {
     width: 100% !important;
     height: auto !important;
     border-radius: 15px;
   }
+
   .heart {
     position: absolute;
     font-size: 24px;
     animation: float 2s ease-out forwards;
   }
+
   @keyframes float {
     0% { opacity: 1; transform: translateY(0) scale(1);}
     100% { opacity: 0; transform: translateY(-200px) scale(1.5);}
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: 500px) {
+    h1 { font-size: 1.5em; }
+    .cell { font-size: 1em; }
+    #instructions { font-size: 1em; }
+    #found-words { font-size: 0.9em; }
+    .gif-wrapper { max-width: 180px; }
   }
 </style>
 </head>
@@ -140,11 +164,9 @@ for(let r=0; r<gridSize; r++){
   }
 }
 
-// Helper to place words in grid
+// Helper to place words
 function placeWord(word){
-  const directions = [
-    [0,1],[1,0],[1,1],[-1,1] // right, down, diagonal down-right, diagonal up-right
-  ];
+  const directions = [[0,1],[1,0],[1,1],[-1,1]];
   let placed = false;
   while(!placed){
     const dir = directions[Math.floor(Math.random()*directions.length)];
@@ -183,7 +205,6 @@ function fillEmpty(){
   }
 }
 
-// Place all words
 words.forEach(placeWord);
 fillEmpty();
 
@@ -230,7 +251,6 @@ function selectCells(cell){
     found.push(selectedWord);
     foundWordsDiv.textContent = `Words found: ${found.length} / ${words.length}`;
     
-    // Keep word highlighted permanently
     cellsInSelection.forEach(c => {
       c.classList.remove('selected');
       c.classList.add('found');
@@ -288,5 +308,6 @@ document.addEventListener('touchend', e=>{
   startCell = null;
 });
 </script>
+
 </body>
 </html>
