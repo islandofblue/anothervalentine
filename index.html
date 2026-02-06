@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Valentine Word Search</title>
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+
+<style>
+  body {
+    font-family: 'Patrick Hand', cursive;
+    background: #ffe6f0;
+    color: #d6336c;
+    text-align: center;
+    padding: 20px;
+    overflow-x: hidden;
+  }
+  h1 {
+    color: #ff66aa;
+  }
+  #instructions {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  #word-search {
+    display: grid;
+    grid-template-columns: repeat(12, 40px);
+    grid-template-rows: repeat(12, 40px);
+    gap: 2px;
+    justify-content: center;
+    user-select: none;
+  }
+  .cell {
+    width: 40px;
+    height: 40px;
+    background: #ffe6f0;
+    border: 1px solid #ff99cc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    border-radius: 8px;
+    font-size: 18px;
+  }
+  .cell.selected {
+    background: #ff99cc;
+    color: white;
+  }
+  .cell.found {
+    background: #ff66aa;
+    color: white;
+  }
+  #found-words {
+    margin-top: 20px;
+    font-size: 1.1em;
+  }
+  #celebration {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    text-align: center;
+    background: #ffe6f0;
+    border: 2px solid #ff66aa;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(255,102,170,0.5);
+  }
+  .gif-wrapper {
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  .gif-wrapper iframe {
+    width: 100% !important;
+    height: auto !important;
+    border-radius: 15px;
+  }
+  .heart {
+    position: absolute;
+    font-size: 24px;
+    animation: float 2s ease-out forwards;
+  }
+  @keyframes float {
+    0% { opacity: 1; transform: translateY(0) scale(1);}
+    100% { opacity: 0; transform: translateY(-200px) scale(1.5);}
+  }
+</style>
+</head>
+<body>
+
+<h1>💕 Valentine Word Search 💕</h1>
+<div id="instructions">
+  Find these words to unlock a secret message from me!<br>
+  <strong>Words:</strong> valentine, babycakes, queer, hinge, sarah, hayley, love, brooklyn, cats<br><br>
+  Click and drag (or swipe) over letters to select a word.
+</div>
+
+<div id="word-search"></div>
+<div id="found-words">Words found: 0 / 9</div>
+
+<div id="celebration">
+  <div class="gif-wrapper">
+    <div class="tenor-gif-embed" data-postid="17240862030780361254" data-share-method="host" data-aspect-ratio="1" data-width="300"></div>
+  </div>
+  <h2>You did it! I love you!! 💖</h2>
+</div>
+
+<script type="text/javascript" async src="https://tenor.com/embed.js"></script>
+
+<script>
+const words = ["valentine","babycakes","queer","hinge","sarah","hayley","love","brooklyn","cats"];
+const gridSize = 12;
+let grid = [];
+let found = [];
+let startCell = null;
+let selecting = false;
+
+const wordSearchDiv = document.getElementById('word-search');
+const foundWordsDiv = document.getElementById('found-words');
+const celebrationDiv = document.getElementById('celebration');
+
+// Create empty grid
+for(let r=0; r<gridSize; r++){
+  grid[r] = [];
+  for(let c=0; c<gridSize; c++){
+    const cell = document.createElement('div');
+    cell.classList.add('cell');
+    cell.dataset.row = r;
+    cell.dataset.col = c;
+    cell.textContent = '';
+    wordSearchDiv.appendChild(cell);
+    grid[r][c] = cell;
+  }
+}
+
+// Helper to place words in grid
+function placeWord(word){
+  const directions = [
+    [0,1],[1,0],[1,1],[-1,1] // right, down, diagonal down-right, diagonal up-right
+  ];
+  let placed = false;
+  while(!placed){
+    const dir = directions[Math.floor(Math.random()*directions.length)];
+    const row = Math.floor(Math.random()*gridSize);
+    const col = Math.floor(Math.random()*gridSize);
+    if(canPlaceWord(word,row,col,dir)){
+      for(let i=0;i<word.length;i++){
+        grid[row+i*dir[0]][col+i*dir[1]].textContent = word[i].toUpperCase();
+        grid[row+i*dir[0]][col+i*dir[1]].dataset.word = word;
+      }
+      placed = true;
+    }
+  }
+}
+
+function canPlaceWord(word,row,col,dir){
+  for(let i=0;i<word.length;i++){
+    const r = row + i*dir[0];
+    const c = col + i*dir[1];
+    if(r<0||r>=gridSize||c<0||c>=gridSize) return false;
+    const cell = grid[r][c];
+    if(cell.textContent !== '' && cell.textContent !== word[i].toUpperCase()) return false;
+  }
+  return true;
+}
+
+// Fill empty cells
+function fillEmpty(){
+  const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  for(let r=0;r<gridSize;r++){
+    for(let c=0;c<gridSize;c++){
+      if(grid[r][c].textContent===''){
+        grid[r][c].textContent = letters[Math.floor(Math.random()*letters.length)];
+      }
+    }
+  }
+}
+
+// Place all words
+words.forEach(placeWord);
+fillEmpty();
+
+// Mouse / touch selection
+function getCellFromEvent(e){
+  const target = e.target;
+  if(target.classList.contains('cell')) return target;
+  return null;
+}
+
+function selectCells(cell){
+  if(!cell) return;
+  if(!startCell) startCell = cell;
+  const sr = parseInt(startCell.dataset.row);
+  const sc = parseInt(startCell.dataset.col);
+  const er = parseInt(cell.dataset.row);
+  const ec = parseInt(cell.dataset.col);
+  
+  const dr = Math.sign(er-sr);
+  const dc = Math.sign(ec-sc);
+  const len = Math.max(Math.abs(er-sr),Math.abs(ec-sc)) + 1;
+  
+  // Clear current selection
+  document.querySelectorAll('.cell').forEach(c=>{
+    if(!c.classList.contains('found')) c.classList.remove('selected');
+  });
+  
+  // Select new
+  let selectedWord = '';
+  let cellsInSelection = [];
+  for(let i=0;i<len;i++){
+    const r = sr + i*dr;
+    const c = sc + i*dc;
+    const cell = grid[r][c];
+    if(cell) {
+      cell.classList.add('selected');
+      cellsInSelection.push(cell);
+      selectedWord += cell.textContent.toLowerCase();
+    }
+  }
+  
+  // Check if the selected word matches
+  if(words.includes(selectedWord) && !found.includes(selectedWord)){
+    found.push(selectedWord);
+    foundWordsDiv.textContent = `Words found: ${found.length} / ${words.length}`;
+    
+    // Keep word highlighted permanently
+    cellsInSelection.forEach(c => {
+      c.classList.remove('selected');
+      c.classList.add('found');
+    });
+    
+    if(found.length === words.length) triggerCelebration();
+  }
+}
+
+function triggerCelebration(){
+  celebrationDiv.style.display = 'block';
+  
+  // Spawn hearts
+  for(let i=0;i<50;i++){
+    const heart = document.createElement('div');
+    heart.classList.add('heart');
+    heart.textContent = '💖';
+    heart.style.left = Math.random()*window.innerWidth+'px';
+    heart.style.top = window.innerHeight+'px';
+    heart.style.fontSize = (10+Math.random()*30)+'px';
+    document.body.appendChild(heart);
+    setTimeout(()=>heart.remove(),2000);
+  }
+}
+
+// Mouse events
+wordSearchDiv.addEventListener('mousedown', e=>{
+  selecting = true;
+  selectCells(getCellFromEvent(e));
+});
+wordSearchDiv.addEventListener('mousemove', e=>{
+  if(selecting) selectCells(getCellFromEvent(e));
+});
+document.addEventListener('mouseup', e=>{
+  selecting = false;
+  startCell = null;
+});
+
+// Touch events
+wordSearchDiv.addEventListener('touchstart', e=>{
+  const cell = getCellFromEvent(e.target);
+  if(cell){
+    selecting = true;
+    selectCells(cell);
+  }
+});
+wordSearchDiv.addEventListener('touchmove', e=>{
+  const touch = e.touches[0];
+  const elem = document.elementFromPoint(touch.clientX,touch.clientY);
+  const cell = getCellFromEvent(elem);
+  if(selecting && cell) selectCells(cell);
+});
+document.addEventListener('touchend', e=>{
+  selecting = false;
+  startCell = null;
+});
+</script>
+</body>
+</html>
